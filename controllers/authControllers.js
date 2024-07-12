@@ -49,3 +49,23 @@ exports.signUp = async (req, res, next) => {
   }
 };
 
+exports.signIn = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password)
+      throw new Error("Please provide email and password");
+
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user || !(await user.correctPassword(password, user.password)))
+      return next(new AppError("Incorrect email or password", 401));
+
+    createSendToken(user, 200, res);
+  } catch (error) {
+    res.status().json({
+      error: error.message,
+      error: error.stack,
+    });
+  }
+};
