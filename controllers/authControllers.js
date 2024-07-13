@@ -53,19 +53,76 @@ exports.signIn = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      throw new Error("Please provide email and password");
+    if (!email || !password){
+      const error = new Error(
+        "Please provide email and password"
+      );
+      error.status = 401;
+      throw error;
+    }
 
     const user = await User.findOne({ email }).select("+password");
 
-    if (!user || !(await user.correctPassword(password, user.password)))
-      return next(new AppError("Incorrect email or password", 401));
+    if (!user || !(await user.correctPassword(password, user.password))){
+      const error = new Error(
+        "Incorrect email or password"
+      );
+      error.status = 401;
+      throw error;
+    }
+
 
     createSendToken(user, 200, res);
+    
   } catch (error) {
-    res.status().json({
+    res.json({
       error: error.message,
       error: error.stack,
     });
   }
 };
+exports.protect = async (req, res, next) => {
+  try {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+
+    if (!token) {
+      const error = new Error(
+        "You are not logged in! Please log in to get access"
+      );
+      error.status = 401;
+      throw error;
+    }
+    // the payload
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    const currentUser = await User.findById(decoded.id);
+
+    //check if the user still exists
+    if (!currentUser) {
+      const error = new Error(
+        "the user belonging to this token does no longer exist"
+      );
+      error.status = 401;
+
+      throw error;
+    }
+
+    req.user = currentUser;
+  } catch (error) {
+    res.json({
+      error: error.message,
+      error: error.stack,
+    });
+  }
+
+  next();
+};
+
