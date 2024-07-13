@@ -81,6 +81,15 @@ exports.signIn = async (req, res, next) => {
     });
   }
 };
+
+exports.logout = (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: "success" });
+};
+
 exports.protect = async (req, res, next) => {
   try {
     let token;
@@ -126,3 +135,19 @@ exports.protect = async (req, res, next) => {
   next();
 };
 
+exports.restricTo = (roles) => {
+  return (req, res, next) => {
+    try {
+      if (!roles.includes(req.user.role)) {
+        throw new Error("You do not have permission to perform this action");
+      }
+    } catch (error) {
+      res.json({
+        error: error.message,
+        error: error.stack,
+      });
+    }
+
+    next();
+  };
+};
