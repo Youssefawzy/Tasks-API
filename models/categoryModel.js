@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const categorySchema = new Schema({
   name: {
     type: String,
-    uniqe: true,
     required: [true, "Please enter the category name"],
   },
   user: {
@@ -12,6 +11,8 @@ const categorySchema = new Schema({
     ref: "User",
   },
 });
+
+categorySchema.index({ name: 1, user: 1 }, { unique: true });
 
 categorySchema.virtual("tasks", {
   ref: "Task",
