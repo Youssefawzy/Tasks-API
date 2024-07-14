@@ -23,7 +23,6 @@ exports.createCategory = async (req, res, next) => {
 
 exports.getAllCategories = async (req, res) => {
   try {
-    
     const features = new APIFeatures(Category.find(), req.query)
       .filter()
       .sort()
@@ -76,12 +75,15 @@ exports.getCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);
+    const { name } = category;
 
     if (!category) {
       const error = new Error("No category found with that ID");
       error.status = 404;
       throw error;
     }
+
+    const tasks = await Task.deleteMany({ category: name });
 
     res.status(204).json({
       status: "success",
