@@ -1,5 +1,6 @@
 const Category = require("./../models/categoryModel");
 const Task = require("./../models/taskModel");
+const APIFeatures = require("./../utils/apiFeatures");
 
 exports.createCategory = async (req, res, next) => {
   try {
@@ -22,7 +23,16 @@ exports.createCategory = async (req, res, next) => {
 
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().populate("user");
+    
+    const features = new APIFeatures(Category.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    const categories = await features.query.populate('tasks');
+
+    // const categories = await Category.find().populate("user");
 
     res.status(200).json({
       status: "success",
