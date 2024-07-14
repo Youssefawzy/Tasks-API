@@ -1,9 +1,10 @@
 const Task = require("./../models/taskModel");
 const Category = require("./../models/categoryModel");
 
-exports.createtask = async (req, res, next) => {
+exports.createTask = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
+    const { name } = category;
 
     if (!category) {
       const error = new Error("Category Not Found");
@@ -32,7 +33,7 @@ exports.createtask = async (req, res, next) => {
 
     const task = await Task.create({
       title,
-      category,
+      category: name,
       is_shared,
       type,
       listTask,
@@ -54,7 +55,7 @@ exports.createtask = async (req, res, next) => {
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ is_shared: { $ne: false } });
 
     res.status(200).json({
       status: "success",
