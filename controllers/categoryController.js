@@ -29,9 +29,7 @@ exports.getAllCategories = async (req, res) => {
       .limitFields()
       .paginate();
 
-    const categories = await features.query.populate('tasks');
-
-    // const categories = await Category.find().populate("user");
+    const categories = await features.query;
 
     res.status(200).json({
       status: "success",

@@ -14,9 +14,4 @@ const categorySchema = new Schema({
 
 categorySchema.index({ name: 1, user: 1 }, { unique: true });
 
-categorySchema.virtual("tasks", {
-  ref: "Task",
-  foreignField: "tour",
-  localField: "_id",
-});
 module.exports = mongoose.model("Category", categorySchema);
