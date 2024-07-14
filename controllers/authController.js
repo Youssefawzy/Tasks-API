@@ -53,20 +53,16 @@ exports.signIn = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password){
-      const error = new Error(
-        "Please provide email and password"
-      );
+    if (!email || !password) {
+      const error = new Error("Please provide email and password");
       error.status = 401;
       throw error;
     }
 
     const user = await User.findOne({ email }).select("+password");
 
-    if (!user || !(await user.correctPassword(password, user.password))){
-      const error = new Error(
-        "Incorrect email or password"
-      );
+    if (!user || !(await user.correctPassword(password, user.password))) {
+      const error = new Error("Incorrect email or password");
       error.status = 401;
       throw error;
     }
